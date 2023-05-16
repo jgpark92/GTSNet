@@ -26,10 +26,6 @@ def data_info(dataset):
         input_nc = 31
         segment_size = 512
         class_num = 18
-    elif dataset == "UniMiB-SHAR":
-        input_nc = 3
-        segment_size = 151
-        class_num = 17
     else:
         raise ValueError("The dataset does not exist")
     return input_nc, segment_size, class_num

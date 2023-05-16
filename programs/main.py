@@ -10,7 +10,7 @@ import numpy as np
 import sys
 from sklearn.metrics import classification_report
 
-from utils import input_pipeline, count_parameters_in_MB, AvgrageMeter, accuracy, save, data_info
+from utils import input_pipeline, count_parameters_in_MB, AvgrageMeter, accuracy, data_info
 from model import GTSNet
 
 save_path = './savemodel/'
@@ -28,8 +28,13 @@ input_nc, segment_size, class_num = data_info(dataset)
 def weight_init(m):
     if isinstance(m, nn.Conv1d) or isinstance(m, nn.Linear):
         nn.init.trunc_normal_(m.weight, std=0.01)
-    elif isinstance(m, nn.BatchNorm1d) or isinstance(m, nn.Linear):
-        nn.init.constant_(m.bias, 0.01)
+    elif isinstance(m, nn.BatchNorm1d):
+        nn.init.constant(m.weight,1)
+        nn.init.constant(m.bias, 0)
+    elif isinstance(m, nn.Linear):
+        nn.init.normal(m.weight, std=0.001)
+        if m.bias is not None:
+            nn.init.constant(m.bias, 0)
 
 def train(train_queue, model, criterion, optimizer):
     cl_loss = AvgrageMeter()

@@ -21,16 +21,38 @@ def channel_shuffle(x, groups):
 
     return x
 
-def shift(x, fold_div=3, inplace=False):
-    _, c, _ = x.size()
+class InplaceShift(torch.autograd.Function):
+    @staticmethod
+    def forward(ctx, input, n_groups):
+        ctx.groups_ = n_groups
+        n, c, t = input.size()
+        slide = c // n_groups
+        left_idx = torch.tensor([i*slide for i in range(n_groups)])
+        right_idx = torch.tensor([i*slide+1 for i in range(n_groups)])
 
-    fold = c // fold_div
-    out = torch.zeros_like(x)
-    out[:, :fold, :-1] = x[:, :fold, 1:]  # shift left
-    out[:, fold: 2 * fold, 1:] = x[:, fold: 2 * fold, :-1]  # shift right
-    out[:, 2 * fold:, :] = x[:, 2 * fold:, :]  # not shift
+        buffer = input.data.new(n, n_groups, t).zero_()
+        buffer[:, :, :-1] = input.data[:, left_idx, 1:] 
+        input.data[:, left_idx] = buffer
+        buffer.zero_()
+        buffer[:, :, 1:] = input.data[:, right_idx, :-1]
+        input.data[:, right_idx] = buffer
+        return input
 
-    return out
+    @staticmethod
+    def backward(ctx, grad_output):
+        n_groups = ctx.groups_
+        n, c, t = grad_output.size()
+        slide = c // n_groups
+        left_idx = torch.tensor([i*slide for i in range(n_groups)])
+        right_idx = torch.tensor([i*slide+1 for i in range(n_groups)])
+
+        buffer = grad_output.data.new(n, left_idx,t).zero_()
+        buffer[:, :, 1:] = grad_output.data[:, left_idx, :-1] # reverse
+        grad_output.data[:, left_idx] = buffer
+        buffer.zero_()
+        buffer[:, :, :-1] = grad_output.data[:, right_idx, 1:]
+        grad_output.data[:, right_idx] = buffer
+        return grad_output, None
 
 class GTSConv(nn.Module):
     def __init__(self, i_nc, n_groups):
@@ -39,12 +61,11 @@ class GTSConv(nn.Module):
         self.conv = nn.Conv1d(i_nc, i_nc, kernel_size=1, padding=0, bias=False, groups=n_groups)
         self.bn = nn.BatchNorm1d(i_nc)
     def forward(self, x):
-        out = shift(x)
-        out = channel_shuffle(x, self.groups)
+        out = InplaceShift.apply(x, self.groups)
         out = self.conv(x)
         out = self.bn(out)
         return out
-
+    
 class GTSConvUnit(nn.Module):
     '''
     Grouped Temporal Shift (GTS) module
