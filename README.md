@@ -1,4 +1,4 @@
-# GTSNet: Flexible Architecture for Activity Recognition under Budget Constraint
+# GTSNet: Flexible Architecture under Budget Constraint for Real-Time Human Activity Recognition from Wearable Sensor
 
 ## Abstract
 
@@ -8,7 +8,7 @@ This software is a PyTorch implementation of the proposed method. The original v
 <!-- You can find detailed information in our manuscript. -->
 
 ### [Paper]
-> Under Review
+> GTSNet: Flexible Architecture under Budget Constraint for Real-Time Human Activity Recognition from Wearable Sensor, Engineering Applications of Artificial Intelligence, Accepted, 2023
 
 ## License
 
