@@ -8,7 +8,17 @@ This software is a PyTorch implementation of the proposed method. The original v
 <!-- You can find detailed information in our manuscript. -->
 
 ### [Paper]
-> GTSNet: Flexible Architecture under Budget Constraint for Real-Time Human Activity Recognition from Wearable Sensor, Engineering Applications of Artificial Intelligence, Accepted, 2023
+```
+@article{park2023gtsnet,
+  title={{GTSNet}: Flexible architecture under budget constraint for real-time human activity recognition from wearable sensor},
+  author={Park, Jaegyun and Lim, Won-Seon and Kim, Dae-Won and Lee, Jaesung},
+  journal={Engineering Applications of Artificial Intelligence},
+  volume={124},
+  number={106543},
+  year={2023},
+  publisher={Elsevier}
+}
+```
 
 ## License
 
